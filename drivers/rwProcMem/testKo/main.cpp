@@ -6,7 +6,7 @@
 #include <vector>
 #include <dirent.h>
 #include <cinttypes>
-#include "MemoryReaderWriter37.h"
+#include "MemoryReaderWriter.h"
 #include "../testMemSearch/MapRegionType.h"
 
 
