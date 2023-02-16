@@ -1,3 +1,4 @@
-obj-m += rwProcMem.o
-#rwProcMem.o := sys.o
-#obj-m := rwProcMem.o
+obj-y += rwProcMem.o
+
+ccflags-y += -Wno-implicit-function-declaration -Wno-strict-prototypes -Wno-int-conversion -Wno-gcc-compat
+ccflags-y += -Wno-macro-redefined -Wno-declaration-after-statement
