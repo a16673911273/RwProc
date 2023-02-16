@@ -16,7 +16,7 @@
 #include <malloc.h>
 
 //默认驱动文件名
-#define RWPROCMEM_FILE_NODE "/dev/rwProcMem37"
+#define RWPROCMEM_FILE_NODE "/dev/rwProcMem"
 
 //安静输出模式
 //#define QUIET_PRINTF
