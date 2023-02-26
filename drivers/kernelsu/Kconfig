@@ -9,6 +9,6 @@ config KSU
 config KSU_DEBUG
 	tristate "KernelSU module debug mode"
 	default n
-	depends on KSU
+	depends n KSU
 	help
 	This enables debug mode for KSU
