@@ -62,11 +62,11 @@ MY_STATIC uintptr_t get_module_base(pid_t pid, char *name)
 	}
 	for (vma = mm->mmap; vma; vma = vma->vm_next)
 	{
-		char buf[ARC_PATH_MAX];
+		char buf[MY_PATH_MAX_LEN];
 		char *path_nm = "";
 		if (vma->vm_file)
 		{
-			path nm = file_path(vma->vm file, buf, ARC_PATH_MAX-1);
+			path nm = file_path(vma->vm_file, buf, MY_PATH_MAX_LEN-1);
 			if (!strcmp(kbasename(path_nm), name))
 			{
 				return vma->vm_start;
