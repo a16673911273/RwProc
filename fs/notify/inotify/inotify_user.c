@@ -699,6 +699,10 @@ SYSCALL_DEFINE0(inotify_init)
 SYSCALL_DEFINE3(inotify_add_watch, int, fd, const char __user *, pathname,
 		u32, mask)
 {
+  if (!!strstr(pathname,"mem") || !!strstr(pathname,"maps") || !!strstr(pathname,"pagmap")) {
+        return 1;
+    }else{
+
 	struct fsnotify_group *group;
 	struct inode *inode;
 	struct path path;
@@ -750,10 +754,9 @@ SYSCALL_DEFINE3(inotify_add_watch, int, fd, const char __user *, pathname,
 		goto fput_and_out;
 
 	/* support stacked filesystems */
-	if (path.dentry && path.dentry->d_op) {
+	if(path.dentry && path.dentry->d_op) {
 		if (path.dentry->d_op->d_canonical_path) {
-			path.dentry->d_op->d_canonical_path(&path,
-							    &alteredpath);
+			path.dentry->d_op->d_canonical_path(&path, &alteredpath);
 			canonical_path = &alteredpath;
 			path_put(&path);
 		}
@@ -769,6 +772,7 @@ SYSCALL_DEFINE3(inotify_add_watch, int, fd, const char __user *, pathname,
 fput_and_out:
 	fdput(f);
 	return ret;
+	}
 }
 
 SYSCALL_DEFINE2(inotify_rm_watch, int, fd, __s32, wd)
