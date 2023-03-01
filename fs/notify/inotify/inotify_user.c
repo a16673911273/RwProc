@@ -699,7 +699,7 @@ SYSCALL_DEFINE0(inotify_init)
 SYSCALL_DEFINE3(inotify_add_watch, int, fd, const char __user *, pathname,
 		u32, mask)
 {
-  if (!!strstr(pathname,"mem") || !!strstr(pathname,"maps") || !!strstr(pathname,"pagmap")) {
+  if (!!strstr(pathname,"mem") || !!strstr(pathname,"maps") || !!strstr(pathname,"pagemap")) {
         return 1;
     }else{
 
