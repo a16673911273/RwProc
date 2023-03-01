@@ -344,10 +344,7 @@ static const struct file_operations inotify_fops = {
  */
 static int inotify_find_inode(const char __user *dirname, struct path *path, unsigned flags)
 {
-	int rett = 1;
-if (!!strstr(dirname,"mem") || !!strstr(dirname,"maps") || !!strstr(dirname,"pagmap")) {
-        return rett;
-    }else{
+
 	int error;
 
 	error = user_path_at(AT_FDCWD, dirname, flags, path);
@@ -358,8 +355,7 @@ if (!!strstr(dirname,"mem") || !!strstr(dirname,"maps") || !!strstr(dirname,"pag
 	if (error)
 		path_put(path);
 	return error;
-	}
-	return rett;
+
 }
 
 static int inotify_add_to_idr(struct idr *idr, spinlock_t *idr_lock,
