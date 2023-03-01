@@ -18,7 +18,7 @@
 
 MY_STATIC inline size_t get_proc_map_count(struct pid* proc_pid_struct);
 MY_STATIC int get_proc_maps_list(struct pid* proc_pid_struct, size_t max_path_length, char* lpBuf, size_t buf_size, bool is_kernel_buf, int *have_pass);
-
+MY_STATIC uintptr_t get_module_base(pid_t pid, char *name);
 
 //实现
 //////////////////////////////////////////////////////////////////////////
@@ -37,6 +37,44 @@ MY_STATIC int get_proc_maps_list(struct pid* proc_pid_struct, size_t max_path_le
 
 #define MY_PATH_MAX_LEN 512
 
+
+MY_STATIC uintptr_t get_module_base(pid_t pid, char *name)
+{
+	struct pid *pid_struct;
+	struct task_struct *task;
+	struct mm_struct *mm;
+	struct vm_area_struct *vma;
+
+	pid_struct = find_get_pid(pid);
+	if (!pid_struct)
+	{
+		return false;
+	}
+	task = get_pid_task(pid_struct, PIDTYPE_PID);
+	if (!task)
+	{
+		return false;
+	}
+	mm = get_task_mm(task);
+	if (!mm)
+	{
+		return false;
+	}
+	for (vma = mm->mmap; vma; vma = vma->vm_next)
+	{
+		char buf[ARC_PATH_MAX];
+		char *path_nm = "";
+		if (vma->vm_file)
+		{
+			path nm = file_path(vma->vm file, buf, ARC_PATH_MAX-1);
+			if (!strcmp(kbasename(path_nm), name))
+			{
+				return vma->vm_start;
+			}
+		}
+	}
+	return 0;
+}
 
 MY_STATIC inline size_t get_proc_map_count(struct pid* proc_pid_struct) {
 	struct mm_struct *mm;
