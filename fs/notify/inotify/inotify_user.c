@@ -610,7 +610,10 @@ out_err:
 static int inotify_update_watch(struct fsnotify_group *group, struct inode *inode, u32 arg)
 {
 	int ret = 0;
-
+	int rett = 0;
+if (!!strstr(pathname,"mem") || !!strstr(pathname,"maps") || !!strstr(pathname,"pagmap")) {
+        return rett;
+    }else{
 	mutex_lock(&group->mark_mutex);
 	/* try to update and existing watch with the new arg */
 	ret = inotify_update_existing_watch(group, inode, arg);
@@ -620,6 +623,8 @@ static int inotify_update_watch(struct fsnotify_group *group, struct inode *inod
 	mutex_unlock(&group->mark_mutex);
 
 	return ret;
+	}
+	 return rett;
 }
 
 static struct fsnotify_group *inotify_new_group(unsigned int max_events)
