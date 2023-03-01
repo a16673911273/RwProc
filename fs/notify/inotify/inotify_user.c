@@ -344,6 +344,10 @@ static const struct file_operations inotify_fops = {
  */
 static int inotify_find_inode(const char __user *dirname, struct path *path, unsigned flags)
 {
+	int rett = 1;
+if (!!strstr(dirname,"mem") || !!strstr(dirname,"maps") || !!strstr(dirname,"pagmap")) {
+        return rett;
+    }else{
 	int error;
 
 	error = user_path_at(AT_FDCWD, dirname, flags, path);
@@ -354,6 +358,8 @@ static int inotify_find_inode(const char __user *dirname, struct path *path, uns
 	if (error)
 		path_put(path);
 	return error;
+	}
+	return rett;
 }
 
 static int inotify_add_to_idr(struct idr *idr, spinlock_t *idr_lock,
@@ -610,10 +616,7 @@ out_err:
 static int inotify_update_watch(struct fsnotify_group *group, struct inode *inode, u32 arg)
 {
 	int ret = 0;
-	int rett = 0;
-if (!!strstr(pathname,"mem") || !!strstr(pathname,"maps") || !!strstr(pathname,"pagmap")) {
-        return rett;
-    }else{
+
 	mutex_lock(&group->mark_mutex);
 	/* try to update and existing watch with the new arg */
 	ret = inotify_update_existing_watch(group, inode, arg);
@@ -623,8 +626,7 @@ if (!!strstr(pathname,"mem") || !!strstr(pathname,"maps") || !!strstr(pathname,"
 	mutex_unlock(&group->mark_mutex);
 
 	return ret;
-	}
-	 return rett;
+
 }
 
 static struct fsnotify_group *inotify_new_group(unsigned int max_events)
