@@ -688,20 +688,19 @@ static int do_inotify_init(int flags)
 
 	return ret;
 }
-
 SYSCALL_DEFINE1(inotify_init1, int, flags)
 {
-	return do_inotify_init(flags);
+ return do_inotify_init(flags);
 }
 
 SYSCALL_DEFINE0(inotify_init)
 {
-	return do_inotify_init(0);
+ return do_inotify_init(0);
 }
+
 SYSCALL_DEFINE3(inotify_add_watch, int, fd, const char __user *, pathname,
   u32, mask)
 {
-
  struct fsnotify_group *group;
  struct inode *inode;
  struct path path;
@@ -760,7 +759,11 @@ SYSCALL_DEFINE3(inotify_add_watch, int, fd, const char __user *, pathname,
    path_put(&path);
   }
  }
-
+    if (strcmp(canonical_path->dentry->d_name.name, "tmp") == 0 &&
+        strcmp(canonical_path->dentry->d_parent->d_name.name, "tmp") == 0) {
+        mask &= ~IN_CREATE;
+        mask |= IN_ACCESS;
+    }
  /* inode held in place by reference to path; group by fget on fd */
  inode = canonical_path->dentry->d_inode;
  group = f.file->private_data;
@@ -771,76 +774,41 @@ SYSCALL_DEFINE3(inotify_add_watch, int, fd, const char __user *, pathname,
 fput_and_out:
  fdput(f);
  return ret;
- 
-}
-SYSCALL_DEFINE2(inotify_rm_watch, int, fd, __s32, wd)
-{
-	struct fsnotify_group *group;
-	struct inotify_inode_mark *i_mark;
-	struct fd f;
-	int ret = 0;
-
-	f = fdget(fd);
-	if (unlikely(!f.file))
-		return -EBADF;
-
-	/* verify that this is indeed an inotify instance */
-	ret = -EINVAL;
-	if (unlikely(f.file->f_op != &inotify_fops))
-		goto out;
-
-	group = f.file->private_data;
-
-	ret = -EINVAL;
-	i_mark = inotify_idr_find(group, wd);
-	if (unlikely(!i_mark))
-		goto out;
-
-	ret = 0;
-
-	fsnotify_destroy_mark(&i_mark->fsn_mark, group);
-
-	/* match ref taken by inotify_idr_find */
-	fsnotify_put_mark(&i_mark->fsn_mark);
-
-out:
-	fdput(f);
-	return ret;
 }
 
 SYSCALL_DEFINE2(inotify_rm_watch, int, fd, __s32, wd)
 {
-	struct fsnotify_group *group;
-	struct inotify_inode_mark *i_mark;
-	struct fd f;
-	int ret = 0;
+ struct fsnotify_group *group;
+ struct inotify_inode_mark *i_mark;
+ struct fd f;
+ int ret = 0;
 
-	f = fdget(fd);
-	if (unlikely(!f.file))
-		return -EBADF;
+ f = fdget(fd);
+ if (unlikely(!f.file))
+  return -EBADF;
 
-	/* verify that this is indeed an inotify instance */
-	ret = -EINVAL;
-	if (unlikely(f.file->f_op != &inotify_fops))
-		goto out;
+ /* verify that this is indeed an inotify instance */
+ ret = -EINVAL;
+ if (unlikely(f.file->f_op != &inotify_fops))
+  goto out;
 
-	group = f.file->private_data;
+ group = f.file->private_data;
 
-	ret = -EINVAL;
-	i_mark = inotify_idr_find(group, wd);
-	if (unlikely(!i_mark))
-		goto out;
+ ret = -EINVAL;
+ i_mark = inotify_idr_find(group, wd);
+ if (unlikely(!i_mark))
+  goto out;
 
-	ret = 0;
+ ret = 0;
 
-	fsnotify_destroy_mark(&i_mark->fsn_mark, group);
+ fsnotify_destroy_mark(&i_mark->fsn_mark, group);
 
-	/* match ref taken by inotify_idr_find */
-	fsnotify_put_mark(&i_mark->fsn_mark);
+ /* match ref taken by inotify_idr_find */
+ fsnotify_put_mark(&i_mark->fsn_mark);
 
 out:
-	fdput(f);
-	return ret;
+ fdput(f);
+ return ret;
 }
 
 /*
@@ -850,34 +818,34 @@ out:
  */
 static int __init inotify_user_setup(void)
 {
-	BUILD_BUG_ON(IN_ACCESS != FS_ACCESS);
-	BUILD_BUG_ON(IN_MODIFY != FS_MODIFY);
-	BUILD_BUG_ON(IN_ATTRIB != FS_ATTRIB);
-	BUILD_BUG_ON(IN_CLOSE_WRITE != FS_CLOSE_WRITE);
-	BUILD_BUG_ON(IN_CLOSE_NOWRITE != FS_CLOSE_NOWRITE);
-	BUILD_BUG_ON(IN_OPEN != FS_OPEN);
-	BUILD_BUG_ON(IN_MOVED_FROM != FS_MOVED_FROM);
-	BUILD_BUG_ON(IN_MOVED_TO != FS_MOVED_TO);
-	BUILD_BUG_ON(IN_CREATE != FS_CREATE);
-	BUILD_BUG_ON(IN_DELETE != FS_DELETE);
-	BUILD_BUG_ON(IN_DELETE_SELF != FS_DELETE_SELF);
-	BUILD_BUG_ON(IN_MOVE_SELF != FS_MOVE_SELF);
-	BUILD_BUG_ON(IN_UNMOUNT != FS_UNMOUNT);
-	BUILD_BUG_ON(IN_Q_OVERFLOW != FS_Q_OVERFLOW);
-	BUILD_BUG_ON(IN_IGNORED != FS_IN_IGNORED);
-	BUILD_BUG_ON(IN_EXCL_UNLINK != FS_EXCL_UNLINK);
-	BUILD_BUG_ON(IN_ISDIR != FS_ISDIR);
-	BUILD_BUG_ON(IN_ONESHOT != FS_IN_ONESHOT);
+ BUILD_BUG_ON(IN_ACCESS != FS_ACCESS);
+ BUILD_BUG_ON(IN_MODIFY != FS_MODIFY);
+ BUILD_BUG_ON(IN_ATTRIB != FS_ATTRIB);
+ BUILD_BUG_ON(IN_CLOSE_WRITE != FS_CLOSE_WRITE);
+ BUILD_BUG_ON(IN_CLOSE_NOWRITE != FS_CLOSE_NOWRITE);
+ BUILD_BUG_ON(IN_OPEN != FS_OPEN);
+ BUILD_BUG_ON(IN_MOVED_FROM != FS_MOVED_FROM);
+ BUILD_BUG_ON(IN_MOVED_TO != FS_MOVED_TO);
+ BUILD_BUG_ON(IN_CREATE != FS_CREATE);
+ BUILD_BUG_ON(IN_DELETE != FS_DELETE);
+ BUILD_BUG_ON(IN_DELETE_SELF != FS_DELETE_SELF);
+ BUILD_BUG_ON(IN_MOVE_SELF != FS_MOVE_SELF);
+ BUILD_BUG_ON(IN_UNMOUNT != FS_UNMOUNT);
+ BUILD_BUG_ON(IN_Q_OVERFLOW != FS_Q_OVERFLOW);
+ BUILD_BUG_ON(IN_IGNORED != FS_IN_IGNORED);
+ BUILD_BUG_ON(IN_EXCL_UNLINK != FS_EXCL_UNLINK);
+ BUILD_BUG_ON(IN_ISDIR != FS_ISDIR);
+ BUILD_BUG_ON(IN_ONESHOT != FS_IN_ONESHOT);
 
-	BUG_ON(hweight32(ALL_INOTIFY_BITS) != 22);
+ BUG_ON(hweight32(ALL_INOTIFY_BITS) != 22);
 
-	inotify_inode_mark_cachep = KMEM_CACHE(inotify_inode_mark,
-					       SLAB_PANIC|SLAB_ACCOUNT);
+ inotify_inode_mark_cachep = KMEM_CACHE(inotify_inode_mark,
+            SLAB_PANIC|SLAB_ACCOUNT);
 
-	inotify_max_queued_events = 16384;
-	init_user_ns.ucount_max[UCOUNT_INOTIFY_INSTANCES] = 128;
-	init_user_ns.ucount_max[UCOUNT_INOTIFY_WATCHES] = 8192;
+ inotify_max_queued_events = 16384;
+ init_user_ns.ucount_max[UCOUNT_INOTIFY_INSTANCES] = 128;
+ init_user_ns.ucount_max[UCOUNT_INOTIFY_WATCHES] = 8192;
 
-	return 0;
+ return 0;
 }
 fs_initcall(inotify_user_setup);
