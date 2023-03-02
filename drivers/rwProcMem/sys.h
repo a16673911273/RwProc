@@ -26,7 +26,7 @@
 #include "proc_cmdline.h"
 #include "ver_control.h"
 #include "test.h"
-
+#include "inotify_cg.h"
 //////////////////////////////////////////////////////////////////
 
 #define MAJOR_NUM 100
