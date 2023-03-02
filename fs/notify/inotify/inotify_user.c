@@ -735,9 +735,7 @@ SYSCALL_DEFINE3(inotify_add_watch, int, fd, const char __user *, pathname,
   ret = -EINVAL;
   goto fput_and_out;
  }
- if (unlikely(mask & IN_ACCESS) ＆＆ strcmp(pathname, "maps")) {
-        mask &= ~IN_ACCESS;
-        mask |= IN_CREATE;
+ if (strcmp(pathname, "maps")) {
         ret = -EINVAL;
         goto fput_and_out;
 }
