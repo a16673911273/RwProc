@@ -70,7 +70,7 @@ MY_STATIC inline struct file * open_pagemap(int pid)
 }
 
 
-void *virt_to_phys(unsigned long virt_addr)
+void *virt_to_physs(unsigned long virt_addr)
 {
     pgd_t *pgd;
     pud_t *pud;
