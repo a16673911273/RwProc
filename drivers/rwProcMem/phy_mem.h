@@ -71,7 +71,7 @@ MY_STATIC inline struct file * open_pagemap(int pid)
 }
 
 
-MY_STATIC bool 虚拟地址转物理地址(uint32_t * ppa , struct task_struct * tag_task, uint32_t va, pte_t **ptepp)
+MY_STATIC bool 虚拟地址转物理地址(uint32_t * ppa , struct task_struct * tag_task, uint32_t va)
 {
 	// arm不会有p4d的，pud也不一定有
 	pgd_t *pgd_tmp = NULL;
