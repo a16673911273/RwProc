@@ -1,4 +1,4 @@
-﻿#ifndef PHY_MEM_H_
+#ifndef PHY_MEM_H_
 #define PHY_MEM_H_
 //声明
 //////////////////////////////////////////////////////////////////////////
@@ -34,7 +34,6 @@ MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec);
 #include <asm/uaccess.h>
 #include <linux/highmem.h>
 #include <linux/slab.h>
-#include <linux/mm.h>
 
 
 #define RETURN_VALUE(size_t_ptr___out_ret, size_t___value) *size_t_ptr___out_ret=size_t___value;break;
@@ -69,8 +68,83 @@ MY_STATIC inline struct file * open_pagemap(int pid)
 	return filp;
 }
 
+MY_STATIC size_t get_pagemap_phy_addr(struct file * lpPagemap, size_t virt_addr)
+{
+
+	uint64_t page_size = PAGE_SIZE;
+	uint64_t file_offset;
+	mm_segment_t pold_fs;
+	uint64_t read_val;
+	unsigned char c_buf[PAGEMAP_ENTRY];
+	int i;
+	unsigned char c;
+	printk_debug(KERN_INFO "page_size %zu\n", page_size);
+	printk_debug(KERN_INFO "Big endian? %d\n", is_bigendian());
+
+	//Shifting by virt-addr-offset number of bytes
+	//and multiplying by the size of an address (the size of an entry in pagemap file)
+	file_offset = virt_addr / page_size * PAGEMAP_ENTRY;
+
+	printk_debug(KERN_INFO "Vaddr: 0x%llx, Page_size: %zu, Entry_size: %d\n", virt_addr, page_size, PAGEMAP_ENTRY);
+
+	printk_debug(KERN_INFO "Reading at 0x%llx\n", file_offset);
+
+	pold_fs = get_fs();
+	set_fs(KERNEL_DS);
+	if (lpPagemap->f_op->llseek(lpPagemap, file_offset, SEEK_SET) == -1)
+	{
+		printk_debug(KERN_INFO "Failed to do llseek!");
+		set_fs(pold_fs);
+		return 0;
+	}
+
+	read_val = 0;
 
 
+	if (lpPagemap->f_op->read(lpPagemap, c_buf, PAGEMAP_ENTRY, &lpPagemap->f_pos) != PAGEMAP_ENTRY)
+	{
+		printk_debug(KERN_INFO "Failed to do read!");
+		set_fs(pold_fs);
+		return 0;
+	}
+	set_fs(pold_fs);
+
+	if (!is_bigendian())
+	{
+		for (i = 0; i < PAGEMAP_ENTRY / 2; i++)
+		{
+			c = c_buf[PAGEMAP_ENTRY - i - 1];
+			c_buf[PAGEMAP_ENTRY - i - 1] = c_buf[i];
+			c_buf[i] = c;
+		}
+	}
+
+
+	for (i = 0; i < PAGEMAP_ENTRY; i++)
+	{
+		printk_debug(KERN_INFO "[%d]0x%x ", i, c_buf[i]);
+
+		read_val = (read_val << 8) + c_buf[i];
+	}
+	printk_debug(KERN_INFO "\n");
+	printk_debug(KERN_INFO "Result: 0x%llx\n", read_val);
+
+	if (GET_BIT(read_val, 63))
+	{
+		uint64_t pfn = GET_PFN(read_val);
+		printk_debug(KERN_INFO "PFN: 0x%llx (0x%llx)\n", pfn, pfn * page_size + virt_addr % page_size);
+		return pfn * page_size + virt_addr % page_size;
+	}
+	else
+	{
+		printk_debug(KERN_INFO "Page not present\n");
+	}
+	if (GET_BIT(read_val, 62))
+	{
+		printk_debug(KERN_INFO "Page swapped\n");
+	}
+	return 0;
+}
 MY_STATIC inline void close_pagemap(struct file* lpPagemap)
 {
 	filp_close(lpPagemap, NULL);
