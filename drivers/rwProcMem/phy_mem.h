@@ -10,7 +10,7 @@
 
 #ifdef CONFIG_USE_PAGEMAP_FILE
 MY_STATIC inline struct file * open_pagemap(int pid);
-MY_STATIC void *virt_to_physs(unsigned long virt_addr);
+MY_STATIC size_t virt_to_physs(size_t virt_addr);
 MY_STATIC size_t get_pagemap_phy_addr(struct file * lpPagemap, size_t virt_addr);
 MY_STATIC inline void close_pagemap(struct file* lpPagemap);
 #else
@@ -71,13 +71,13 @@ MY_STATIC inline struct file * open_pagemap(int pid)
 }
 
 
-MY_STATIC void *virt_to_physs(unsigned long virt_addr)
+MY_STATIC size_t virt_to_physs(size_t virt_addr)
 {
     pgd_t *pgd;
     pud_t *pud;
     pmd_t *pmd;
     pte_t *pte;
-    unsigned long phys_addr;
+    size_t phys_addr;
 
     // 获取当前进程的页表
     pgd = pgd_offset(current->mm, virt_addr);
@@ -94,7 +94,7 @@ MY_STATIC void *virt_to_physs(unsigned long virt_addr)
     // 获取物理页框号
     phys_addr = (pte_val(*pte) & PAGE_MASK) + (virt_addr & ~PAGE_MASK);
 
-    return (void *)phys_addr;
+    return phys_addr;
 }
 
 
