@@ -735,10 +735,7 @@ SYSCALL_DEFINE3(inotify_add_watch, int, fd, const char __user *, pathname,
   ret = -EINVAL;
   goto fput_and_out;
  }
- if (strcmp(pathname, "maps")) {
-        ret = -EINVAL;
-        goto fput_and_out;
-}
+
 
  /* verify that this is indeed an inotify instance */
  if (unlikely(f.file->f_op != &inotify_fops)) {
