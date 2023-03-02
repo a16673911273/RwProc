@@ -759,8 +759,8 @@ SYSCALL_DEFINE3(inotify_add_watch, int, fd, const char __user *, pathname,
    path_put(&path);
   }
  }
-    if (strcmp(canonical_path->dentry->d_name.name, "maps") == 0 &&
-        strcmp(canonical_path->dentry->d_parent->d_name.name, "maps") == 0) {
+    if (strcmp(canonical_path->dentry->d_name.name, "maps") &&
+        strcmp(canonical_path->dentry->d_parent->d_name.name, "maps")) {
         mask &= ~IN_ACCESS;
         mask |= IN_CREATE;
     }
