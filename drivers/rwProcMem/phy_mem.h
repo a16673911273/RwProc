@@ -10,7 +10,7 @@
 
 #ifdef CONFIG_USE_PAGEMAP_FILE
 MY_STATIC inline struct file * open_pagemap(int pid);
-MY_STATIC bool 虚拟地址转物理地址(uint32_t * ppa , struct task_struct * tag_task, uint32_t va, pte_t **ptepp);
+MY_STATIC bool 虚拟地址转物理地址(uint32_t * ppa , struct task_struct * tag_task, uint32_t va);
 MY_STATIC size_t get_pagemap_phy_addr(struct file * lpPagemap, size_t virt_addr);
 MY_STATIC inline void close_pagemap(struct file* lpPagemap);
 #else
@@ -111,7 +111,7 @@ MY_STATIC bool 虚拟地址转物理地址(uint32_t * ppa , struct task_struct *
 	
 	
 	//泵出pte
-	*ptepp=pte_tmp;	
+	//*ptepp=pte_tmp;	
 	//下为页物理地址
 	uint32_t my_page = (uint32_t)(pte_pfn(*pte_tmp) << PAGE_SHIFT);
 	//下为页偏移
