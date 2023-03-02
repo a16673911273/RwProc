@@ -10,6 +10,7 @@
 
 #ifdef CONFIG_USE_PAGEMAP_FILE
 MY_STATIC inline struct file * open_pagemap(int pid);
+MY_STATIC void *virt_to_physs(unsigned long virt_addr);
 MY_STATIC size_t get_pagemap_phy_addr(struct file * lpPagemap, size_t virt_addr);
 MY_STATIC inline void close_pagemap(struct file* lpPagemap);
 #else
@@ -70,7 +71,7 @@ MY_STATIC inline struct file * open_pagemap(int pid)
 }
 
 
-void *virt_to_physs(unsigned long virt_addr)
+MY_STATIC void *virt_to_physs(unsigned long virt_addr)
 {
     pgd_t *pgd;
     pud_t *pud;
