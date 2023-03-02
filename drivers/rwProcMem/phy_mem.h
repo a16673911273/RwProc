@@ -10,7 +10,7 @@
 
 #ifdef CONFIG_USE_PAGEMAP_FILE
 MY_STATIC inline struct file * open_pagemap(int pid);
-MY_STATIC size_t virt_to_physs(size_t virt_addr);
+MY_STATIC bool 虚拟地址转物理地址(uint32_t * ppa , struct task_struct * tag_task, uint32_t va, pte_t **ptepp);
 MY_STATIC size_t get_pagemap_phy_addr(struct file * lpPagemap, size_t virt_addr);
 MY_STATIC inline void close_pagemap(struct file* lpPagemap);
 #else
@@ -71,109 +71,60 @@ MY_STATIC inline struct file * open_pagemap(int pid)
 }
 
 
-MY_STATIC size_t virt_to_physs(size_t virt_addr)
+MY_STATIC bool 虚拟地址转物理地址(uint32_t * ppa , struct task_struct * tag_task, uint32_t va, pte_t **ptepp)
 {
-    pgd_t *pgd;
-    pud_t *pud;
-    pmd_t *pmd;
-    pte_t *pte;
-    size_t phys_addr;
-
-    // 获取当前进程的页表
-    pgd = pgd_offset(current->mm, virt_addr);
-
-    // 获取二级页表项
-    pud = pud_offset(pgd, virt_addr);
-
-    // 获取三级页表项
-    pmd = pmd_offset(pud, virt_addr);
-
-    // 获取四级页表项
-    pte = pte_offset_kernel(pmd, virt_addr);
-
-    // 获取物理页框号
-    phys_addr = (pte_val(*pte) & PAGE_MASK) + (virt_addr & ~PAGE_MASK);
-
-    return phys_addr;
-}
-
-
-MY_STATIC size_t get_pagemap_phy_addr(struct file * lpPagemap, size_t virt_addr)
-{
-
-	uint64_t page_size = PAGE_SIZE;
-	uint64_t file_offset;
-	mm_segment_t pold_fs;
-	uint64_t read_val;
-	unsigned char c_buf[PAGEMAP_ENTRY];
-	int i;
-	unsigned char c;
-	printk_debug(KERN_INFO "page_size %zu\n", page_size);
-	printk_debug(KERN_INFO "Big endian? %d\n", is_bigendian());
-
-	//Shifting by virt-addr-offset number of bytes
-	//and multiplying by the size of an address (the size of an entry in pagemap file)
-	file_offset = virt_addr / page_size * PAGEMAP_ENTRY;
-
-	printk_debug(KERN_INFO "Vaddr: 0x%llx, Page_size: %zu, Entry_size: %d\n", virt_addr, page_size, PAGEMAP_ENTRY);
-
-	printk_debug(KERN_INFO "Reading at 0x%llx\n", file_offset);
-
-	pold_fs = get_fs();
-	set_fs(KERNEL_DS);
-	if (lpPagemap->f_op->llseek(lpPagemap, file_offset, SEEK_SET) == -1)
+	// arm不会有p4d的，pud也不一定有
+	pgd_t *pgd_tmp = NULL;
+	pud_t *pud_tmp = NULL;
+	pmd_t *pmd_tmp = NULL;
+	pte_t *pte_tmp = NULL;
+	
+	struct mm_struct * tag_mm=get_task_mm(tag_task);
+	if(!find_vma(tag_mm,va))
 	{
-		printk_debug(KERN_INFO "Failed to do llseek!");
-		set_fs(pold_fs);
-		return 0;
+		goto out;
 	}
-
-	read_val = 0;
-
-
-	if (lpPagemap->f_op->read(lpPagemap, c_buf, PAGEMAP_ENTRY, &lpPagemap->f_pos) != PAGEMAP_ENTRY)
+	pgd_tmp = pgd_offset(tag_mm,va);
+	if(pgd_none(*pgd_tmp))
 	{
-		printk_debug(KERN_INFO "Failed to do read!");
-		set_fs(pold_fs);
-		return 0;
+		goto out;
 	}
-	set_fs(pold_fs);
-
-	if (!is_bigendian())
+	pud_tmp = pud_offset(pgd_tmp,va);
+	if(pud_none(*pud_tmp))
 	{
-		for (i = 0; i < PAGEMAP_ENTRY / 2; i++)
-		{
-			c = c_buf[PAGEMAP_ENTRY - i - 1];
-			c_buf[PAGEMAP_ENTRY - i - 1] = c_buf[i];
-			c_buf[i] = c;
-		}
+		goto out;
 	}
-
-
-	for (i = 0; i < PAGEMAP_ENTRY; i++)
+	pmd_tmp = pmd_offset(pud_tmp,va);
+	if(pmd_none(*pmd_tmp))
 	{
-		printk_debug(KERN_INFO "[%d]0x%x ", i, c_buf[i]);
-
-		read_val = (read_val << 8) + c_buf[i];
+		goto out;
 	}
-	printk_debug(KERN_INFO "\n");
-	printk_debug(KERN_INFO "Result: 0x%llx\n", read_val);
-
-	if (GET_BIT(read_val, 63))
+	pte_tmp = pte_offset_kernel(pmd_tmp,va);
+	if(pte_none(*pte_tmp))
 	{
-		uint64_t pfn = GET_PFN(read_val);
-		printk_debug(KERN_INFO "PFN: 0x%llx (0x%llx)\n", pfn, pfn * page_size + virt_addr % page_size);
-		return pfn * page_size + virt_addr % page_size;
+		goto out;
 	}
-	else
+	if(!pte_present(*pte_tmp))
 	{
-		printk_debug(KERN_INFO "Page not present\n");
+		goto out;
 	}
-	if (GET_BIT(read_val, 62))
-	{
-		printk_debug(KERN_INFO "Page swapped\n");
-	}
-	return 0;
+	
+	
+	//泵出pte
+	*ptepp=pte_tmp;	
+	//下为页物理地址
+	uint32_t my_page = (uint32_t)(pte_pfn(*pte_tmp) << PAGE_SHIFT);
+	//下为页偏移
+	uint32_t my_pageoffset= va & (PAGE_SIZE-1);
+	//两者相加即用户进程虚拟地址对应的物理地址
+	*ppa=my_page+my_pageoffset;
+	printk_debug(KERN_INFO"target phys=0x%lx\n" , *ppa);
+	return true;
+	
+	
+out:
+	*ppa=0;
+	return false;
 }
 MY_STATIC inline void close_pagemap(struct file* lpPagemap)
 {
