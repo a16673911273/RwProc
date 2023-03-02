@@ -68,7 +68,7 @@ MY_STATIC ssize_t rwProcMem_read(struct file* filp, char __user* buf, size_t siz
 			printk_debug(KERN_INFO "open_pagemap %p\n", pFile);
 			if (!pFile) { break; }
 
-			phy_addr = virt_to_physs(proc_virt_addr);
+			phy_addr = get_pagemap_phy_addr(pFile, proc_virt_addr);
 
 			close_pagemap(pFile);
 #else
