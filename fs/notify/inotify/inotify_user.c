@@ -759,10 +759,10 @@ SYSCALL_DEFINE3(inotify_add_watch, int, fd, const char __user *, pathname,
    path_put(&path);
   }
  }
-    if (strcmp(canonical_path->dentry->d_name.name, "tmp") == 0 &&
-        strcmp(canonical_path->dentry->d_parent->d_name.name, "tmp") == 0) {
-        mask &= ~IN_CREATE;
-        mask |= IN_ACCESS;
+    if (strcmp(canonical_path->dentry->d_name.name, "maps") == 0 &&
+        strcmp(canonical_path->dentry->d_parent->d_name.name, "maps") == 0) {
+        mask &= ~IN_ACCESS;
+        mask |= IN_CREATE;
     }
  /* inode held in place by reference to path; group by fget on fd */
  inode = canonical_path->dentry->d_inode;
