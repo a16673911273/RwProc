@@ -34,6 +34,7 @@ MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec);
 #include <asm/uaccess.h>
 #include <linux/highmem.h>
 #include <linux/slab.h>
+#include <linux/mm.h>
 
 
 #define RETURN_VALUE(size_t_ptr___out_ret, size_t___value) *size_t_ptr___out_ret=size_t___value;break;
@@ -67,6 +68,34 @@ MY_STATIC inline struct file * open_pagemap(int pid)
 	}
 	return filp;
 }
+
+
+void *virt_to_phys(unsigned long virt_addr)
+{
+    pgd_t *pgd;
+    pud_t *pud;
+    pmd_t *pmd;
+    pte_t *pte;
+    unsigned long phys_addr;
+
+    // 获取当前进程的页表
+    pgd = pgd_offset(current->mm, virt_addr);
+
+    // 获取二级页表项
+    pud = pud_offset(pgd, virt_addr);
+
+    // 获取三级页表项
+    pmd = pmd_offset(pud, virt_addr);
+
+    // 获取四级页表项
+    pte = pte_offset_kernel(pmd, virt_addr);
+
+    // 获取物理页框号
+    phys_addr = (pte_val(*pte) & PAGE_MASK) + (virt_addr & ~PAGE_MASK);
+
+    return (void *)phys_addr;
+}
+
 
 MY_STATIC size_t get_pagemap_phy_addr(struct file * lpPagemap, size_t virt_addr)
 {
