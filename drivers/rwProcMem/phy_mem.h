@@ -19,7 +19,7 @@ MY_STATIC inline int is_pte_can_exec(pte_t* pte);
 MY_STATIC inline int change_pte_read_status(pte_t* pte, bool can_read);
 MY_STATIC inline int change_pte_write_status(pte_t* pte, bool can_write);
 MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec);
-MY_STATIC inline bool get_pagemap_phy_addrr(size_t * ppa , struct pid * tag_task, size_t va, pte_t **ptepp);
+MY_STATIC inline bool get_pagemap_phy_addrr(uint32_t * ppa , struct task_struct * tag_task, uint32_t va, pte_t **ptepp);
 //size_t get_task_proc_phy_addr(struct task_struct* task, size_t virt_addr, pte_t *out_pte)
 //size_t get_proc_phy_addr(struct pid* proc_pid_struct, size_t virt_addr, pte_t *out_pte)
 //size_t read_ram_physical_addr(size_t phy_addr, char* lpBuf, bool is_kernel_buf, size_t read_size)
@@ -227,7 +227,7 @@ MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec)
 //	return 0;
 //}
 
-MY_STATIC inline bool get_pagemap_phy_addrr(size_t * ppa , struct pid * tag_task, size_t va, pte_t **ptepp)
+MY_STATIC inline bool get_pagemap_phy_addrr(uint32_t * ppa , struct task_struct * tag_task, uint32_t va, pte_t **ptepp)
 {
 	// arm不会有p4d的，pud也不一定有
 	pgd_t *pgd_tmp = NULL;
@@ -304,7 +304,7 @@ do{\
 	struct task_struct *task_try___ = get_pid_task(pid_ptr___proc_pid_struct, PIDTYPE_PID);\
 	if (!task_try___) { 	RETURN_VALUE(size_t_ptr___out_ret, 0) }\
 	\
-	get_task_proc_phy_addr(size_t_ptr___out_ret,task_try___, size_t___virt_addr, pte_t_ptr__out_pte);\
+	get_pagemap_phy_addrr(size_t_ptr___out_ret,task_try___, size_t___virt_addr, pte_t_ptr__out_pte);\
 }while(0)
 
 
