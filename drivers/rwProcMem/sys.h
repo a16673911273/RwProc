@@ -13,8 +13,6 @@
 #include <linux/uaccess.h>
 #include <linux/kernel.h>
 #include <linux/version.h>
-#include <linux/sched.h>
-#include <linux/mm_types.h>
 ///////////////////////////////////////////////////////////////////
 #include <linux/slab.h> //kmalloc与kfree
 #include <linux/cdev.h>
@@ -28,6 +26,7 @@
 #include "proc_cmdline.h"
 #include "ver_control.h"
 #include "test.h"
+
 
 //////////////////////////////////////////////////////////////////
 
