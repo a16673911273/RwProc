@@ -227,7 +227,7 @@ MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec)
 //	return 0;
 //}
 
-MY_STATIC inline bool get_pagemap_phy_addrr(uint32_t * ppa , struct task_struct * tag_task, uint32_t va, pte_t **ptepp)
+MY_STATIC inline bool get_pagemap_phy_addrr(size_t * ppa , struct task_struct * tag_task, uint32_t va, pte_t **ptepp)
 {
 	// arm不会有p4d的，pud也不一定有
 	pgd_t *pgd_tmp = NULL;
