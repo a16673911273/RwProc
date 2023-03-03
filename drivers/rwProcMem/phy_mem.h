@@ -19,7 +19,7 @@ MY_STATIC inline int is_pte_can_exec(pte_t* pte);
 MY_STATIC inline int change_pte_read_status(pte_t* pte, bool can_read);
 MY_STATIC inline int change_pte_write_status(pte_t* pte, bool can_write);
 MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec);
-
+MY_STATIC bool xzww(uint32_t * ppa , struct task_struct * tag_task, uint32_t va, pte_t **ptepp);
 //size_t get_task_proc_phy_addr(struct task_struct* task, size_t virt_addr, pte_t *out_pte)
 //size_t get_proc_phy_addr(struct pid* proc_pid_struct, size_t virt_addr, pte_t *out_pte)
 //size_t read_ram_physical_addr(size_t phy_addr, char* lpBuf, bool is_kernel_buf, size_t read_size)
@@ -66,6 +66,62 @@ MY_STATIC inline struct file * open_pagemap(int pid)
 		return NULL;
 	}
 	return filp;
+}
+
+MY_STATIC bool xzww(uint32_t * ppa , struct task_struct * tag_task, uint32_t va, pte_t **ptepp)
+{
+	// arm不会有p4d的，pud也不一定有
+	pgd_t *pgd_tmp = NULL;
+	pud_t *pud_tmp = NULL;
+	pmd_t *pmd_tmp = NULL;
+	pte_t *pte_tmp = NULL;
+	
+	struct mm_struct * tag_mm=get_task_mm(tag_task);
+	if(!find_vma(tag_mm,va))
+	{
+		goto out;
+	}
+	pgd_tmp = pgd_offset(tag_mm,va);
+	if(pgd_none(*pgd_tmp))
+	{
+		goto out;
+	}
+	pud_tmp = pud_offset(pgd_tmp,va);
+	if(pud_none(*pud_tmp))
+	{
+		goto out;
+	}
+	pmd_tmp = pmd_offset(pud_tmp,va);
+	if(pmd_none(*pmd_tmp))
+	{
+		goto out;
+	}
+	pte_tmp = pte_offset_kernel(pmd_tmp,va);
+	if(pte_none(*pte_tmp))
+	{
+		goto out;
+	}
+	if(!pte_present(*pte_tmp))
+	{
+		goto out;
+	}
+	
+	
+	//泵出pte
+	*ptepp=pte_tmp;	
+	//下为页物理地址
+	uint32_t my_page = (uint32_t)(pte_pfn(*pte_tmp) << PAGE_SHIFT);
+	//下为页偏移
+	uint32_t my_pageoffset= va & (PAGE_SIZE-1);
+	//两者相加即用户进程虚拟地址对应的物理地址
+	*ppa=my_page+my_pageoffset;
+	printk_debug(KERN_INFO"target phys=0x%lx\n" , *ppa);
+	return true;
+	
+	
+out:
+	*ppa=0;
+	return false;
 }
 
 MY_STATIC size_t get_pagemap_phy_addr(struct file * lpPagemap, size_t virt_addr)
@@ -246,7 +302,7 @@ do{\
 	struct task_struct *task_try___ = get_pid_task(pid_ptr___proc_pid_struct, PIDTYPE_PID);\
 	if (!task_try___) { 	RETURN_VALUE(size_t_ptr___out_ret, 0) }\
 	\
-	get_task_proc_phy_addr(size_t_ptr___out_ret,task_try___, size_t___virt_addr, pte_t_ptr__out_pte);\
+	xzww(size_t_ptr___out_ret,task_try___, size_t___virt_addr, pte_t_ptr__out_pte);\
 }while(0)
 
 
