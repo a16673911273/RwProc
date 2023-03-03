@@ -302,7 +302,7 @@ do{\
 	struct task_struct *task_try___ = get_pid_task(pid_ptr___proc_pid_struct, PIDTYPE_PID);\
 	if (!task_try___) { 	RETURN_VALUE(size_t_ptr___out_ret, 0) }\
 	\
-	xzww(size_t_ptr___out_ret,task_try___, size_t___virt_addr, pte_t_ptr__out_pte);\
+	get_task_proc_phy_addr(size_t_ptr___out_ret,task_try___, size_t___virt_addr, pte_t_ptr__out_pte);\
 }while(0)
 
 
