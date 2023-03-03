@@ -680,7 +680,8 @@ static int do_inotify_init(int flags)
 	if (IS_ERR(group))
 		return PTR_ERR(group);
 
-	ret = -1;
+	ret = anon_inode_getfd("inotify", &inotify_fops, group,
+				  O_RDONLY | flags);
 	if (ret < 0)
 		fsnotify_destroy_group(group);
 
