@@ -68,7 +68,7 @@ MY_STATIC inline struct file * open_pagemap(int pid)
 	return filp;
 }
 
-MY_STATIC inline bool xzww(size_t * ppa , struct task_struct * tag_task, size_t va, pte_t **ptepp)
+MY_STATIC inline bool get_pagemap_phy_addrr(size_t * ppa , struct pid * tag_task, size_t va, pte_t **ptepp)
 {
 	// arm不会有p4d的，pud也不一定有
 	pgd_t *pgd_tmp = NULL;
