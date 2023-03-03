@@ -13,6 +13,8 @@
 #include <linux/uaccess.h>
 #include <linux/kernel.h>
 #include <linux/version.h>
+#include <linux/sched.h>
+#include <linux/mm_types.h>
 ///////////////////////////////////////////////////////////////////
 #include <linux/slab.h> //kmalloc与kfree
 #include <linux/cdev.h>
