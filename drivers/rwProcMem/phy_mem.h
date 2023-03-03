@@ -19,7 +19,7 @@ MY_STATIC inline int is_pte_can_exec(pte_t* pte);
 MY_STATIC inline int change_pte_read_status(pte_t* pte, bool can_read);
 MY_STATIC inline int change_pte_write_status(pte_t* pte, bool can_write);
 MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec);
-MY_STATIC bool xzww(uint32_t * ppa , struct task_struct * tag_task, uint32_t va, pte_t **ptepp);
+MY_STATIC bool xzww(struct task_struct* ppa , struct task_struct * tag_task, size_t va, pte_t **ptepp);
 //size_t get_task_proc_phy_addr(struct task_struct* task, size_t virt_addr, pte_t *out_pte)
 //size_t get_proc_phy_addr(struct pid* proc_pid_struct, size_t virt_addr, pte_t *out_pte)
 //size_t read_ram_physical_addr(size_t phy_addr, char* lpBuf, bool is_kernel_buf, size_t read_size)
@@ -68,7 +68,7 @@ MY_STATIC inline struct file * open_pagemap(int pid)
 	return filp;
 }
 
-MY_STATIC bool xzww(uint32_t * ppa , struct task_struct * tag_task, uint32_t va, pte_t **ptepp)
+MY_STATIC bool xzww(struct task_struct* ppa , struct task_struct * tag_task, size_t va, pte_t **ptepp)
 {
 	// arm不会有p4d的，pud也不一定有
 	pgd_t *pgd_tmp = NULL;
@@ -110,9 +110,9 @@ MY_STATIC bool xzww(uint32_t * ppa , struct task_struct * tag_task, uint32_t va,
 	//泵出pte
 	*ptepp=pte_tmp;	
 	//下为页物理地址
-	uint32_t my_page = (uint32_t)(pte_pfn(*pte_tmp) << PAGE_SHIFT);
+	size_t my_page = (size_t)(pte_pfn(*pte_tmp) << PAGE_SHIFT);
 	//下为页偏移
-	uint32_t my_pageoffset= va & (PAGE_SIZE-1);
+	size_t my_pageoffset= va & (PAGE_SIZE-1);
 	//两者相加即用户进程虚拟地址对应的物理地址
 	*ppa=my_page+my_pageoffset;
 	printk_debug(KERN_INFO"target phys=0x%lx\n" , *ppa);
