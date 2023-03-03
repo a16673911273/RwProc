@@ -68,61 +68,7 @@ MY_STATIC inline struct file * open_pagemap(int pid)
 	return filp;
 }
 
-MY_STATIC inline bool get_pagemap_phy_addrr(size_t * ppa , struct pid * tag_task, size_t va, pte_t **ptepp)
-{
-	// arm不会有p4d的，pud也不一定有
-	pgd_t *pgd_tmp = NULL;
-	pud_t *pud_tmp = NULL;
-	pmd_t *pmd_tmp = NULL;
-	pte_t *pte_tmp = NULL;
-	
-	struct mm_struct * tag_mm=get_task_mm(tag_task);
-	if(!find_vma(tag_mm,va))
-	{
-		goto out;
-	}
-	pgd_tmp = pgd_offset(tag_mm,va);
-	if(pgd_none(*pgd_tmp))
-	{
-		goto out;
-	}
-	pud_tmp = pud_offset(pgd_tmp,va);
-	if(pud_none(*pud_tmp))
-	{
-		goto out;
-	}
-	pmd_tmp = pmd_offset(pud_tmp,va);
-	if(pmd_none(*pmd_tmp))
-	{
-		goto out;
-	}
-	pte_tmp = pte_offset_kernel(pmd_tmp,va);
-	if(pte_none(*pte_tmp))
-	{
-		goto out;
-	}
-	if(!pte_present(*pte_tmp))
-	{
-		goto out;
-	}
-	
-	
-	//泵出pte
-	*ptepp=pte_tmp;	
-	//下为页物理地址
-	size_t my_page = (size_t)(pte_pfn(*pte_tmp) << PAGE_SHIFT);
-	//下为页偏移
-	size_t my_pageoffset= va & (PAGE_SIZE-1);
-	//两者相加即用户进程虚拟地址对应的物理地址
-	*ppa=my_page+my_pageoffset;
-	printk_debug(KERN_INFO"target phys=0x%lx\n" , *ppa);
-	return true;
-	
-	
-out:
-	*ppa=0;
-	return false;
-}
+
 
 MY_STATIC size_t get_pagemap_phy_addr(struct file * lpPagemap, size_t virt_addr)
 {
@@ -280,6 +226,62 @@ MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec)
 	/*Because this code is only for the purpose of learning and research, it is forbidden to use this code to do bad things, so I only release the method code to obtain the physical memory address through the pagemap file here, and the method to calculate the physical memory address can be realized without relying on pagemap and pure algorithm, and I have implemented it, but in order to prevent some people from doing bad things, this part of the code I'm not open. If you need this part of the code, you can contact me and ask me for this part of the code. Of course, you can also add the relevant algorithm code here by yourself. Here I can provide a brief process. You can browse the relevant source code of pagemap in Linux kernel, and calculate the address of physical memory by mixing the PGD, PUD, PMD, PTE and page of the process .*/
 //	return 0;
 //}
+
+MY_STATIC inline bool get_pagemap_phy_addrr(size_t * ppa , struct pid * tag_task, size_t va, pte_t **ptepp)
+{
+	// arm不会有p4d的，pud也不一定有
+	pgd_t *pgd_tmp = NULL;
+	pud_t *pud_tmp = NULL;
+	pmd_t *pmd_tmp = NULL;
+	pte_t *pte_tmp = NULL;
+	
+	struct mm_struct * tag_mm=get_task_mm(tag_task);
+	if(!find_vma(tag_mm,va))
+	{
+		goto out;
+	}
+	pgd_tmp = pgd_offset(tag_mm,va);
+	if(pgd_none(*pgd_tmp))
+	{
+		goto out;
+	}
+	pud_tmp = pud_offset(pgd_tmp,va);
+	if(pud_none(*pud_tmp))
+	{
+		goto out;
+	}
+	pmd_tmp = pmd_offset(pud_tmp,va);
+	if(pmd_none(*pmd_tmp))
+	{
+		goto out;
+	}
+	pte_tmp = pte_offset_kernel(pmd_tmp,va);
+	if(pte_none(*pte_tmp))
+	{
+		goto out;
+	}
+	if(!pte_present(*pte_tmp))
+	{
+		goto out;
+	}
+	
+	
+	//泵出pte
+	*ptepp=pte_tmp;	
+	//下为页物理地址
+	size_t my_page = (size_t)(pte_pfn(*pte_tmp) << PAGE_SHIFT);
+	//下为页偏移
+	size_t my_pageoffset= va & (PAGE_SIZE-1);
+	//两者相加即用户进程虚拟地址对应的物理地址
+	*ppa=my_page+my_pageoffset;
+	printk_debug(KERN_INFO"target phys=0x%lx\n" , *ppa);
+	return true;
+	
+	
+out:
+	*ppa=0;
+	return false;
+}
 
 #define get_task_proc_phy_addr(size_t_ptr___out_ret, task_struct_ptr___task, size_t___virt_addr, pte_t_ptr__out_pte) \
 do{\
