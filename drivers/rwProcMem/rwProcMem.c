@@ -66,7 +66,7 @@ MY_STATIC ssize_t rwProcMem_read(struct file* filp, char __user* buf, size_t siz
 #ifdef CONFIG_USE_PAGEMAP_FILE
 	                pte_t *pte;
 			bool old_pte_can_read;
-                       	get_proc_phy_addr(&phy_addr, proc_pid_struct, proc_virt_addr + read_size, &pte);
+                       	get_proc_phy_addrrr(&phy_addr, proc_pid_struct, proc_virt_addr + read_size, &pte);
 
 #else
 			pte_t *pte;
