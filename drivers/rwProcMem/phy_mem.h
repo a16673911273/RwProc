@@ -20,8 +20,8 @@ MY_STATIC inline int change_pte_read_status(pte_t* pte, bool can_read);
 MY_STATIC inline int change_pte_write_status(pte_t* pte, bool can_write);
 MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec);
 
-size_t get_task_proc_phy_addr(struct task_struct* task, size_t virt_addr, pte_t *out_pte)
-size_t get_proc_phy_addr(struct pid* proc_pid_struct, size_t virt_addr, pte_t *out_pte)
+size_t get_task_proc_phy_addr(struct task_struct* task, size_t virt_addr, pte_t *out_pte);
+size_t get_proc_phy_addr(struct pid* proc_pid_struct, size_t virt_addr, pte_t *out_pte);
 //size_t read_ram_physical_addr(size_t phy_addr, char* lpBuf, bool is_kernel_buf, size_t read_size)
 //size_t write_ram_physical_addr(size_t phy_addr, char* lpBuf, bool is_kernel_buf, size_t write_size)
 #endif
