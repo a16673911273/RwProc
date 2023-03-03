@@ -221,12 +221,13 @@ MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec)
 //
 MY_STATIC size_t get_task_proc_phy_addr(struct task_struct* task, size_t virt_addr, pte_t *out_pte)
 {
-    pgd_t *pgd;
+        pgd_t *pgd;
     pud_t *pud;
     pmd_t *pmd;
     pte_t *pte;
+    struct page *page;
     size_t phys_addr;
-    
+
     // 获取指定进程的页表
     pgd = pgd_offset(task->mm, virt_addr);
     if (pgd_none(*pgd) || pgd_bad(*pgd)) {
@@ -247,8 +248,13 @@ MY_STATIC size_t get_task_proc_phy_addr(struct task_struct* task, size_t virt_ad
     if (out_pte) {
         *out_pte = *pte;
     }
+    // 获取PTE对应的物理页
+    page = pte_page(*pte);
+    if (!page) {
+        return -EFAULT;
+    }
     // 计算物理地址
-    phys_addr = (pte_pfn(*pte) << PAGE_SHIFT) | (virt_addr & ~PAGE_MASK);
+    phys_addr = (page_to_pfn(page) << PAGE_SHIFT) | (virt_addr & ~PAGE_MASK);
     return phys_addr;
 }
 
