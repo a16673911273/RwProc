@@ -74,7 +74,7 @@ MY_STATIC ssize_t rwProcMem_read(struct file* filp, char __user* buf, size_t siz
 #else
 			pte_t *pte;
 			bool old_pte_can_read;
-			get_proc_phy_addr(&phy_addr, proc_pid_struct, proc_virt_addr + read_size, &pte);
+			get_proc_phy_addr(&phy_addr, proc_pid_struct, (proc_virt_addr + read_size), &pte);
 #endif
 			printk_debug(KERN_INFO "phy_addr:0x%zx\n", phy_addr);
 			if (phy_addr == 0)
@@ -172,7 +172,7 @@ MY_STATIC ssize_t rwProcMem_write(struct file* filp, const char __user* buf, siz
 #else
 			pte_t *pte;
 			bool old_pte_can_write;
-			get_proc_phy_addr(&phy_addr, proc_pid_struct, proc_virt_addr + write_size, &pte);
+			get_proc_phy_addr(&phy_addr, proc_pid_struct, (proc_virt_addr + write_size), &pte);
 #endif
 
 			printk_debug(KERN_INFO "phy_addr:0x%zx\n", phy_addr);
