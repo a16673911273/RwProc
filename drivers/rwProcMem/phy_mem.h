@@ -228,22 +228,35 @@ MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec)
 #define get_task_proc_phy_addr(size_t_ptr___out_ret, task_struct_ptr___task, size_t___virt_addr, pte_t_ptr__out_pte) \
 do{
     size_t * ret___ = size_t_ptr___out_ret;\
-    struct task_struct * task___ = task_struct_ptr___task;\
-    pte_t * out_pte___ = pte_t_ptr__out_pte;\
-    if (!task___ || !ret___) {\
-        RETURN_VALUE(ret___, -EINVAL);\
+    struct task_struct* task___ = task_struct_ptr___task;\
+    pte_t * pte___ = pte_t_ptr__out_pte;\
+    \
+    RETURN_VALUE(ret___, 0)\
+    \
+    if (!task___) {\
+        printk(KERN_ERR "task_struct pointer is NULL!");\
+        break;\
     }\
-    if (!task___->mm) {\
-        RETURN_VALUE(ret___, -EINVAL);\
+    \
+    if (!pte___) {\
+        printk(KERN_ERR "pte pointer is NULL!");\
+        break;\
     }\
-    if (virt_to_phys((void *)virt_addr) < PAGE_OFFSET) {\
-        RETURN_VALUE(ret___, -EFAULT);\
+    \
+    phys_addr_t phys_addr___ = 0;\
+    \
+    /* 获取虚拟地址对应的页表项 */\
+    pte_t pte_val___ = *pte___;\
+    \
+    /* 如果页表项不存在，则表示虚拟地址没有映射到物理地址 */\
+    if (!pte_present(pte_val___)) {\
+        printk(KERN_ERR "page table entry is not present!");\
+        break;\
     }\
-    phys_addr___ = get_task_proc_phy_addr_helper(task___, virt_addr, out_pte___);\
-    if (phys_addr___ == (size_t)~0UL) {\
-        RETURN_VALUE(ret___, -EFAULT);\
-    }\
-    RETURN_VALUE(ret___, phys_addr___);\
+    \
+    /* 获取物理地址 */\
+    phys_addr___ = (pte_pfn(pte_val___) << PAGE_SHIFT) + offset_in_page(size_t___virt_addr);\
+    *ret___ = (size_t)phys_addr___;\
 }while(0)
 
 
