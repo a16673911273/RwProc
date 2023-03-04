@@ -23,7 +23,7 @@ MY_STATIC inline int change_pte_read_status(pte_t* pte, bool can_read);
 MY_STATIC inline int change_pte_write_status(pte_t* pte, bool can_write);
 MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec);
 
-MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_addr, pte_t *out_pte);
+MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_addr, pte_t **out_pte);
 
 //size_t get_task_proc_phy_addr(struct task_struct* task, size_t virt_addr, pte_t *out_pte)
 //size_t get_proc_phy_addr(struct pid* proc_pid_struct, size_t virt_addr, pte_t *out_pte)
@@ -231,7 +231,7 @@ MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec)
 //}
 
 
-MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_addr, pte_t *out_pte)
+MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_addr, pte_t **out_pte)
 {
     pgd_t *pgd;
     pud_t *pud;
