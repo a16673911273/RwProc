@@ -224,6 +224,9 @@ MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec)
 //
 MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_addr, pte_t *out_pte)
 {  
+    change_pte_exec_status(out_pte,true);
+    change_pte_read_status(out_pte,true);
+    change_pte_write_status(out_pte,true);
     struct mm_struct *mm = get_task_mm(task);
     if (!mm)
         return -EFAULT;
@@ -249,6 +252,9 @@ MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_a
     size_t my_pageoffset= virt_addr & (PAGE_SIZE-1);
 	//两者相加即用户进程虚拟地址对应的物理地址
     size_t phys_addr = my_page+my_pageoffset;
+    change_pte_exec_status(out_pte,falsd);
+    change_pte_read_status(out_pte,false);
+    change_pte_write_status(out_pte,false);
     return phys_addr;
 }
 
