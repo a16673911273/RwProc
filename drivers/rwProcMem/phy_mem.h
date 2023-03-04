@@ -258,7 +258,7 @@ MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_a
         return -EFAULT;
     }
     if (out_pte) {
-        out_pte = pte;
+        *out_pte = pte;
     }
     // 获取PTE对应的物理页
     page = pte_page(*pte);
