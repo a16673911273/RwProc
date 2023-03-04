@@ -227,9 +227,9 @@ MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec)
 
 #define get_task_proc_phy_addr(size_t_ptr___out_ret, task_struct_ptr___task, size_t___virt_addr, pte_t_ptr__out_pte) \
 do{
-    size_t *ret___ = size_t_ptr___out_ret;\
-    struct task_struct *task___ = task_struct_ptr___task;\
-    pte_t *out_pte___ = pte_t_ptr__out_pte;\
+    size_t * ret___ = size_t_ptr___out_ret;\
+    struct task_struct * task___ = task_struct_ptr___task;\
+    pte_t * out_pte___ = pte_t_ptr__out_pte;\
     if (!task___ || !ret___) {\
         RETURN_VALUE(ret___, -EINVAL);\
     }\
