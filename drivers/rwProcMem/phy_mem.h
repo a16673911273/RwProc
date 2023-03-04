@@ -227,41 +227,23 @@ MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec)
 
 #define get_task_proc_phy_addr(size_t_ptr___out_ret, task_struct_ptr___task, size_t___virt_addr, pte_t_ptr__out_pte) \
 do{
-    pgd_t *pgd_try___; \
-    pud_t *pud_try___; \
-    pmd_t *pmd_try___; \
-    pte_t *pte_try___; \
-    struct page_try___ *page_try___; \
-    size_t phys_addr_try___; \
-
-    // 获取指定进程的页表
-    pgd_try___ = pgd_offset(pid_ptr___proc_pid_struct->mm, size_t___virt_addr); \
-    if (pgd_none(*pgd_try___) || pgd_bad(*pgd_try___)) {
-        return -EFAULT; \
-    }
-    pud_try___ = pud_offset(pgd_try___, size_t___virt_addr); \
-    if (pud_none(*pud_try___) || pud_bad(*pud_try___)) {
-        return -EFAULT; \
-    }
-    pmd_try___ = pmd_offset(pud_try___, size_t___virt_addr); \
-    if (pmd_none(*pmd_try___) || pmd_bad(*pmd_try___)) {
-        return -EFAULT; \
-    }
-    pte_try___ = pte_offset_kernel(pmd_try___, size_t___virt_addr); \
-    if (!pte_try___ || pte_none(*pte_try___)) {
-        return -EFAULT; \
-    }
-    if (pte_t_ptr__out_pte) {
-        *pte_t_ptr__out_pte = *pte_try___; \
-    }
-    // 获取PTE对应的物理页
-    page_try___ = pte_page(*pte_try___); \
-    if (!page_try___) {
-        return -EFAULT; \
-    }
-    // 计算物理地址
-    phys_addr_try___ = (page_to_pfn(page_try___) << PAGE_SHIFT) | (size_t___virt_addr & ~PAGE_MASK); \
-    return phys_addr_try___; \
+    size_t *ret___ = size_t_ptr___out_ret;\
+    struct task_struct *task___ = task_struct_ptr___task;\
+    pte_t *out_pte___ = pte_t_ptr__out_pte;\
+    if (!task___ || !ret___) {\
+        RETURN_VALUE(ret___, -EINVAL);\
+    }\
+    if (!task___->mm) {\
+        RETURN_VALUE(ret___, -EINVAL);\
+    }\
+    if (virt_to_phys((void *)virt_addr) < PAGE_OFFSET) {\
+        RETURN_VALUE(ret___, -EFAULT);\
+    }\
+    phys_addr___ = get_task_proc_phy_addr_helper(task___, virt_addr, out_pte___);\
+    if (phys_addr___ == (size_t)~0UL) {\
+        RETURN_VALUE(ret___, -EFAULT);\
+    }\
+    RETURN_VALUE(ret___, phys_addr___);\
 }while(0)
 
 
