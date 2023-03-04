@@ -454,7 +454,7 @@ MY_STATIC long rwProcMem_ioctl(
 			ret = get_pagemap_phy_addr(pFile, proc_virt_addr);
 			close_pagemap(pFile);
 #else
-			res = get_proc_phy_addr(proc_pid_struct, proc_virt_addr, pte);
+			ret = get_proc_phy_addr(proc_pid_struct, proc_virt_addr, pte);
 #endif
 
 			if (ret)
