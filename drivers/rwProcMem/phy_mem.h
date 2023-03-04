@@ -224,41 +224,52 @@ MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec)
 //
 MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_addr, pte_t *out_pte)
 {  
-    pgd_t *pgd;
-    pud_t *pud;
-    pmd_t *pmd;
-    pte_t *pte;
-    struct page *page;
-    size_t phys_addr;
-
-    // Get the page table of the specified process
-    pgd = pgd_offset(task->mm, virt_addr);
-    if (pgd_none(*pgd) || pgd_bad(*pgd)) {
-        return -EFAULT;
-    }
-    pud = pud_offset(pgd, virt_addr);
-    if (pud_none(*pud) || pud_bad(*pud)) {
-        return -EFAULT;
-    }
-    pmd = pmd_offset(pud, virt_addr);
-    if (pmd_none(*pmd) || pmd_bad(*pmd)) {
-        return -EFAULT;
-    }
-    pte = pte_offset_kernel(pmd, virt_addr);
-    if (!pte || pte_none(*pte)) {
-        return -EFAULT;
-    }
-    if (out_pte) {
-        *out_pte = *pte;
-    }
-    // Get the physical page corresponding to the PTE
-    page = pte_page(*pte);
-    if (!page) {
-        return -EFAULT;
-    }
-    // Calculate the physical address
-    phys_addr = (page_to_pfn(page) << PAGE_SHIFT) | (virt_addr & ~PAGE_MASK);
-    return phys_addr;
+    	// arm不会有p4d的，pud也不一定有
+	pgd_t *pgd_tmp = NULL;
+	pud_t *pud_tmp = NULL;
+	pmd_t *pmd_tmp = NULL;
+	pte_t *pte_tmp = NULL;
+	size_t phys_addr;
+	struct mm_struct * tag_mm=get_task_mm(task);
+	if(!find_vma(tag_mm,virt_addr))
+	{
+		return -EFAULT;
+	}
+	pgd_tmp = pgd_offset(tag_mm,virt_addr);
+	if(pgd_none(*pgd_tmp))
+	{
+		return -EFAULT;
+	}
+	pud_tmp = pud_offset(pgd_tmp,virt_addr);
+	if(pud_none(*pud_tmp))
+	{
+		return -EFAULT;
+	}
+	pmd_tmp = pmd_offset(pud_tmp,virt_addr);
+	if(pmd_none(*pmd_tmp))
+	{
+		return -EFAULT;
+	}
+	pte_tmp = pte_offset_kernel(pmd_tmp,virt_addr);
+	if(pte_none(*pte_tmp))
+	{
+		return -EFAULT;
+	}
+	if(!pte_present(*pte_tmp))
+	{
+		return -EFAULT;
+	}
+	
+	
+	//泵出pte
+	*out_pte=*pte_tmp;	
+	//下为页物理地址
+	size_t my_page = (size_t)(pte_pfn(*pte_tmp) << PAGE_SHIFT);
+	//下为页偏移
+	size_t my_pageoffset= virt_addr & (PAGE_SIZE-1);
+	//两者相加即用户进程虚拟地址对应的物理地址
+	phys_addr = my_page+my_pageoffset;
+	return phys_addr;
 }
 
 
