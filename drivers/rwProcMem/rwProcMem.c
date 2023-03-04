@@ -172,7 +172,8 @@ MY_STATIC ssize_t rwProcMem_write(struct file* filp, const char __user* buf, siz
 #else
 			pte_t *pte;
 			bool old_pte_can_write;
-			get_proc_phy_addr(&phy_addr, proc_pid_struct, proc_virt_addr + write_size, &pte);
+			phy_addr = get_proc_phy_addrr(proc_pid_struct, proc_virt_addr + write_size, pte);
+
 #endif
 
 			printk_debug(KERN_INFO "phy_addr:0x%zx\n", phy_addr);
@@ -453,7 +454,7 @@ MY_STATIC long rwProcMem_ioctl(
 			ret = get_pagemap_phy_addr(pFile, proc_virt_addr);
 			close_pagemap(pFile);
 #else
-			get_proc_phy_addr(&ret, proc_pid_struct, proc_virt_addr, &pte);
+			res = get_proc_phy_addr(proc_pid_struct, proc_virt_addr, pte);
 #endif
 
 			if (ret)
