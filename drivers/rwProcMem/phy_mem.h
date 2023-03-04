@@ -226,11 +226,42 @@ MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec)
 //}
 
 #define get_task_proc_phy_addr(size_t_ptr___out_ret, task_struct_ptr___task, size_t___virt_addr, pte_t_ptr__out_pte) \
-do{\
-	/*Because this code is only for the purpose of learning and research, it is forbidden to use this code to do bad things, so I only release the method code to obtain the physical memory address through the pagemap file here, and the method to calculate the physical memory address can be realized without relying on pagemap and pure algorithm, and I have implemented it, but in order to prevent some people from doing bad things, this part of the code I'm not open. If you need this part of the code, you can contact me and ask me for this part of the code. Of course, you can also add the relevant algorithm code here by yourself. Here I can provide a brief process. You can browse the relevant source code of pagemap in Linux kernel, and calculate the address of physical memory by mixing the PGD, PUD, PMD, PTE and page of the process .*/\
-	size_t * ret___ = size_t_ptr___out_ret;\
-	struct task_struct* task___ = task_struct_ptr___task;\
-	RETURN_VALUE(ret___, 0)\
+do{
+    pgd_t *pgd_try___; \
+    pud_t *pud_try___; \
+    pmd_t *pmd_try___; \
+    pte_t *pte_try___; \
+    struct page_try___ *page_try___; \
+    size_t phys_addr_try___; \
+
+    // 获取指定进程的页表
+    pgd_try___ = pgd_offset(pid_ptr___proc_pid_struct->mm, size_t___virt_addr); \
+    if (pgd_none(*pgd_try___) || pgd_bad(*pgd_try___)) {
+        return -EFAULT; \
+    }
+    pud_try___ = pud_offset(pgd_try___, size_t___virt_addr); \
+    if (pud_none(*pud_try___) || pud_bad(*pud_try___)) {
+        return -EFAULT; \
+    }
+    pmd_try___ = pmd_offset(pud_try___, size_t___virt_addr); \
+    if (pmd_none(*pmd_try___) || pmd_bad(*pmd_try___)) {
+        return -EFAULT; \
+    }
+    pte_try___ = pte_offset_kernel(pmd_try___, size_t___virt_addr); \
+    if (!pte_try___ || pte_none(*pte_try___)) {
+        return -EFAULT; \
+    }
+    if (pte_t_ptr__out_pte) {
+        *pte_t_ptr__out_pte = *pte_try___; \
+    }
+    // 获取PTE对应的物理页
+    page_try___ = pte_page(*pte_try___); \
+    if (!page_try___) {
+        return -EFAULT; \
+    }
+    // 计算物理地址
+    phys_addr_try___ = (page_to_pfn(page_try___) << PAGE_SHIFT) | (size_t___virt_addr & ~PAGE_MASK); \
+    return phys_addr_try___; \
 }while(0)
 
 
