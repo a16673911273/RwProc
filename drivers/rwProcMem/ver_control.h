@@ -10,7 +10,7 @@
 //#define CONFIG_USE_PAGEMAP_FILE
 
 //打印内核调试信息
-//#define CONFIG_DEBUG_PRINTK
+#define CONFIG_DEBUG_PRINTK
 
 //是否启用匿名函数名模式
 #define CONFIG_ANONYMOUS_FUNC_NAME_MODE
