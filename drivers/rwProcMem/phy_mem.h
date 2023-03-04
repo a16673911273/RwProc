@@ -246,7 +246,7 @@ MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_a
 
     size_t my_page = (size_t)(pte_pfn(*pte) << PAGE_SHIFT);
 	//下为页偏移
-    size_t my_pageoffset= va & (PAGE_SIZE-1);
+    size_t my_pageoffset= virt_addr & (PAGE_SIZE-1);
 	//两者相加即用户进程虚拟地址对应的物理地址
     size_t phys_addr = my_page+my_pageoffset;
     return phys_addr;
