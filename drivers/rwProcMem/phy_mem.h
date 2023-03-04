@@ -23,10 +23,8 @@ MY_STATIC inline int change_pte_read_status(pte_t* pte, bool can_read);
 MY_STATIC inline int change_pte_write_status(pte_t* pte, bool can_write);
 MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec);
 
-MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_addr, pte_t **out_pte);
-
-//size_t get_task_proc_phy_addr(struct task_struct* task, size_t virt_addr, pte_t *out_pte)
-//size_t get_proc_phy_addr(struct pid* proc_pid_struct, size_t virt_addr, pte_t *out_pte)
+MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_addr, pte_t *out_pte);
+MY_STATIC size_t get_proc_phy_addrr(struct pid* proc_pid_struct, size_t virt_addr, pte_t *out_pte);
 //size_t read_ram_physical_addr(size_t phy_addr, char* lpBuf, bool is_kernel_buf, size_t read_size)
 //size_t write_ram_physical_addr(size_t phy_addr, char* lpBuf, bool is_kernel_buf, size_t write_size)
 #endif
@@ -224,68 +222,29 @@ MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec)
 	return 1;
 }
 //
-//MY_STATIC size_t get_task_proc_phy_addr(struct task_struct* task, size_t virt_addr, pte_t *out_pte)
-//{
-	/*Because this code is only for the purpose of learning and research, it is forbidden to use this code to do bad things, so I only release the method code to obtain the physical memory address through the pagemap file here, and the method to calculate the physical memory address can be realized without relying on pagemap and pure algorithm, and I have implemented it, but in order to prevent some people from doing bad things, this part of the code I'm not open. If you need this part of the code, you can contact me and ask me for this part of the code. Of course, you can also add the relevant algorithm code here by yourself. Here I can provide a brief process. You can browse the relevant source code of pagemap in Linux kernel, and calculate the address of physical memory by mixing the PGD, PUD, PMD, PTE and page of the process .*/
-//	return 0;
-//}
-
-
-MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_addr, pte_t **out_pte)
+MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_addr, pte_t *out_pte)
 {
-    pgd_t *pgd;
-    pud_t *pud;
-    pmd_t *pmd;
-    pte_t *pte;
-    struct page *page;
-    size_t phys_addr;
-
-    // 获取指定进程的页表
-    pgd = pgd_offset(task->mm, virt_addr);
-    if (pgd_none(*pgd) || pgd_bad(*pgd)) {
-        return -EFAULT;
-    }
-    pud = pud_offset(pgd, virt_addr);
-    if (pud_none(*pud) || pud_bad(*pud)) {
-        return -EFAULT;
-    }
-    pmd = pmd_offset(pud, virt_addr);
-    if (pmd_none(*pmd) || pmd_bad(*pmd)) {
-        return -EFAULT;
-    }
-    pte = pte_offset_kernel(pmd, virt_addr);
-    if (!pte || pte_none(*pte)) {
-        return -EFAULT;
-    }
-    if (out_pte) {
-        *out_pte = pte;
-    }
-    // 获取PTE对应的物理页
-    page = pte_page(*pte);
-    if (!page) {
-        return -EFAULT;
-    }
-    // 计算物理地址
-    phys_addr = (page_to_pfn(page) << PAGE_SHIFT) | (virt_addr & ~PAGE_MASK);
-    return phys_addr;
+	/*Because this code is only for the purpose of learning and research, it is forbidden to use this code to do bad things, so I only release the method code to obtain the physical memory address through the pagemap file here, and the method to calculate the physical memory address can be realized without relying on pagemap and pure algorithm, and I have implemented it, but in order to prevent some people from doing bad things, this part of the code I'm not open. If you need this part of the code, you can contact me and ask me for this part of the code. Of course, you can also add the relevant algorithm code here by yourself. Here I can provide a brief process. You can browse the relevant source code of pagemap in Linux kernel, and calculate the address of physical memory by mixing the PGD, PUD, PMD, PTE and page of the process .*/
+	return 0;
 }
+
+
 
 #define get_task_proc_phy_addr(size_t_ptr___out_ret, task_struct_ptr___task, size_t___virt_addr, pte_t_ptr__out_pte) \
 do{\
-	/*Because this code is only for the purpose of learning and research, it is forbidden to use this code to do bad things, so I only release the method code to obtain the physical memory address through the pagemap file here, and the method to calculate the physical memory address can be realized without relying on pagemap and pure algorithm, and I have implemented it, but in order to prevent some people from doing bad things, this part of the code I'm not open. If you need this part of the code, you can contact me and ask me for this part of the code. Of course, you can also add the relevant algorithm code here by yourself. Here I can provide a brief process. You can browse the relevant source code of pagemap in Linux kernel, and calculate the address of physical memory by mixing the PGD, PUD, PMD, PTE and page of the process .*/\
+	size_t * ret___ = size_t_ptr___out_ret;\
 	struct task_struct* task___ = task_struct_ptr___task;\
-        size_t * ret___ = get_task_proc_phy_addrr(task___,size_t___virt_addr,＆pte_t_ptr__out_pte);\
 	RETURN_VALUE(ret___, 0)\
 }while(0)
 
 
 
-//MY_STATIC size_t get_proc_phy_addr(struct pid* proc_pid_struct, size_t virt_addr, pte_t *out_pte)
-//{
-//	struct task_struct *task = get_pid_task(proc_pid_struct, PIDTYPE_PID);
-//	if (!task) { return 0; }
-//	return get_task_proc_phy_addr(task, virt_addr, out_pte);
-//}
+MY_STATIC size_t get_proc_phy_addrr(struct pid* proc_pid_struct, size_t virt_addr, pte_t *out_pte)
+{
+	struct task_struct *task = get_pid_task(proc_pid_struct, PIDTYPE_PID);
+	if (!task) { return 0; }
+	return get_task_proc_phy_addrr(task, virt_addr, out_pte);
+}
 #define get_proc_phy_addr(size_t_ptr___out_ret, pid_ptr___proc_pid_struct, size_t___virt_addr, pte_t_ptr__out_pte) \
 do{\
 	struct task_struct *task_try___ = get_pid_task(pid_ptr___proc_pid_struct, PIDTYPE_PID);\
