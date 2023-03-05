@@ -102,7 +102,7 @@ MY_STATIC inline int init_proc_cmdline_offset(void) {
 					close_pagemap(pFile);
 #else
 					pte_t *pte;
-					phy_addr = get_task_proc_phy_addrr(current, arg_start + read_size, pte);
+					phy_addr = get_task_proc_phy_addrr(current, arg_start + read_size, ＆pte);
 #endif
 					printk_debug(KERN_INFO "phy_addr:0x%zx\n", phy_addr);
 					if (phy_addr == 0) {
