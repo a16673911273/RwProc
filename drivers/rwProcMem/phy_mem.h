@@ -268,7 +268,7 @@ MY_STATIC size_t get_proc_phy_addrr(struct pid* proc_pid_struct, size_t virt_add
 {
 	struct task_struct *task = get_pid_task(proc_pid_struct, PIDTYPE_PID);
 	if (!task) { return 0; }
-	return get_task_proc_phy_addrr(task, virt_addr, ＆out_pte);
+	return get_task_proc_phy_addrr(task, virt_addr, &out_pte);
 }
 #define get_proc_phy_addr(size_t_ptr___out_ret, pid_ptr___proc_pid_struct, size_t___virt_addr, pte_t_ptr__out_pte) \
 do{\
