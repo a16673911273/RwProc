@@ -23,8 +23,8 @@ MY_STATIC inline int change_pte_read_status(pte_t* pte, bool can_read);
 MY_STATIC inline int change_pte_write_status(pte_t* pte, bool can_write);
 MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec);
 
-MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_addr, pte_t *out_pte);
-MY_STATIC size_t get_proc_phy_addrr(struct pid* proc_pid_struct, size_t virt_addr, pte_t *out_pte);
+MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_addr, pte_t **out_pte);
+MY_STATIC size_t get_proc_phy_addrr(struct pid* proc_pid_struct, size_t virt_addr, pte_t **out_pte);
 //size_t read_ram_physical_addr(size_t phy_addr, char* lpBuf, bool is_kernel_buf, size_t read_size)
 //size_t write_ram_physical_addr(size_t phy_addr, char* lpBuf, bool is_kernel_buf, size_t write_size)
 #endif
@@ -222,7 +222,7 @@ MY_STATIC inline int change_pte_exec_status(pte_t* pte, bool can_exec)
 	return 1;
 }
 //
-MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_addr, pte_t *out_pte)
+MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_addr, pte_t **out_pte)
 {  
     struct mm_struct *mm = get_task_mm(task);
     if (!mm)
@@ -244,6 +244,7 @@ MY_STATIC size_t get_task_proc_phy_addrr(struct task_struct* task, size_t virt_a
     if (!pte || pte_none(*pte))
         return -EFAULT;
 
+    *out_pte=pte;
     size_t my_page = (size_t)(pte_pfn(*pte) << PAGE_SHIFT);
 	//下为页偏移
     size_t my_pageoffset= virt_addr & (PAGE_SIZE-1);
@@ -263,11 +264,11 @@ do{\
 
 
 
-MY_STATIC size_t get_proc_phy_addrr(struct pid* proc_pid_struct, size_t virt_addr, pte_t *out_pte)
+MY_STATIC size_t get_proc_phy_addrr(struct pid* proc_pid_struct, size_t virt_addr, pte_t **out_pte)
 {
 	struct task_struct *task = get_pid_task(proc_pid_struct, PIDTYPE_PID);
 	if (!task) { return 0; }
-	return get_task_proc_phy_addrr(task, virt_addr, out_pte);
+	return get_task_proc_phy_addrr(task, virt_addr, ＆out_pte);
 }
 #define get_proc_phy_addr(size_t_ptr___out_ret, pid_ptr___proc_pid_struct, size_t___virt_addr, pte_t_ptr__out_pte) \
 do{\
