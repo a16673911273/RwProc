@@ -1,1 +1,1 @@
-obj-y := pmrw.o
+obj-m := pmrw.o
